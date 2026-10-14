@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Bài Tập Tương Tác Chuyên Nghiệp</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap');
+
+        :root {
+            --bg-color: #fce4ec; --card-bg: #ffffff; --primary: #ff6b81;
+            --secondary: #7bed9f; --text-main: #2f3542; --border-radius: 20px;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif; background-color: var(--bg-color);
+            background-image: radial-gradient(#ffb8c6 3px, transparent 3px); background-size: 30px 30px;
+            color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center;
+        }
+
+        .container {
+            max-width: 800px; width: 100%; background: var(--card-bg); border-radius: var(--border-radius);
+            box-shadow: 0 15px 35px rgba(255, 107, 129, 0.2); padding: 30px; box-sizing: border-box;
+            border: 5px solid #ff9ff3; position: relative; margin-top: 20px;
+        }
+
+        /* Nút Giáo viên */
+        .teacher-login-btn {
+            position: absolute; top: -20px; right: 20px; background: #2f3542; border: 2px solid #2f3542;
+            border-radius: 10px; padding: 8px 15px; cursor: pointer; font-weight: bold; color: #fff; z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;
+        }
+        .teacher-login-btn:hover { background: #ff4757; border-color: #ff4757; transform: translateY(-2px);}
+
+        /* Đồng hồ đếm ngược */
+        #timerDisplay {
+            position: fixed; top: 15px; right: 15px; background: #ff4757; color: white;
+            padding: 10px 20px; border-radius: 20px; font-weight: 800; font-size: 18px;
+            z-index: 1000; box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4); display: none;
+            border: 3px solid white; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% {transform: scale(1);} 50% {transform: scale(1.05);} 100% {transform: scale(1);} }
+
+        /* Giao diện Admin */
+        #adminPanel { display: none; background: #ffffff; padding: 25px; border-radius: 15px; border: 4px dashed #70a1ff; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .admin-title { color: #3742fa; text-align: center; margin-top: 0; border-bottom: 2px solid #eccc68; padding-bottom: 10px;}
+        .admin-section { background: #f8f9fa; border: 1px solid #dfe4ea; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        .admin-section h4 { margin: 0 0 15px 0; color: #ff6b81; padding-bottom: 5px; border-bottom: 1px dashed #ff9a9e; display: flex; justify-content: space-between; align-items: center;}
+        .form-row { display: flex; gap: 15px; margin-bottom: 12px; align-items: flex-start; }
+        .form-group { flex: 1; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #2f3542; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 2px solid #a4b0be; border-radius: 8px; font-family: 'Nunito', sans-serif; box-sizing: border-box; }
+        .form-group textarea { height: 60px; resize: vertical; }
+        .expl-input { border-color: #f39c12 !important; background: #fffdf2 !important; }
+        
+        .add-q-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; background: #eaf1ff; padding: 15px; border-radius: 10px; border: 2px dashed #70a1ff;}
+        .btn-add { padding: 10px 15px; background: #70a1ff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .btn-add:hover { background: #5352ed; transform: translateY(-2px);}
+        .btn-del { padding: 5px 10px; background: #ff4757; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;}
+        
+        .admin-btns { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;}
+        .btn-save { flex: 1; padding: 15px; background: #2ed573; color: white; border: none; border-radius: 10px; font-weight: 800; font-size: 16px; cursor: pointer;}
+        .btn-export { flex: 1; padding: 15px; background: #ffa502; color: white; border: none; border-radius: 10px; font-weight: 800; font-size: 16px; cursor: pointer;}
+        .btn-reset { padding: 15px; background: #ff4757; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+        /* Giao diện Học sinh */
+        h1 { text-align: center; color: var(--primary); font-size: 32px; margin-bottom: 5px; text-shadow: 2px 2px 0px #ffeaa7; }
+        h3.subtitle { text-align: center; color: #747d8c; margin-top: 0; }
+        .mascot-container { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; background: #fff0f5; padding: 15px; border-radius: 20px; border: 2px dashed #ff9ff3; }
+        .mascot-emoji { font-size: 60px; animation: bounce 2s infinite; }
+        .mascot-bubble { background: white; border: 3px solid #ff9a9e; border-radius: 15px; padding: 10px 15px; position: relative; font-weight: 800; color: #ff6b81; font-size: 16px; }
+        .student-info { display: flex; gap: 15px; margin-bottom: 20px; }
+        .student-info input { flex: 1; padding: 12px; border: 2px solid #70a1ff; border-radius: 12px; font-family: inherit; font-size: 16px; background: #f1f8ff; }
+        .objectives { background-color: #fff3cd; padding: 15px; border-radius: 15px; margin-bottom: 25px; font-weight: 600; border-left: 5px solid #ffc107; }
+        
+        .section { background: #f1f2f6; padding: 25px; border-radius: 20px; margin-bottom: 25px; border: 3px solid transparent; transition: 0.3s; }
+        .section:hover { border-color: #7bed9f; background: #ffffff; }
+        .section-title { color: #3742fa; font-size: 20px; margin-top: 0; border-bottom: 3px dotted #70a1ff; padding-bottom: 10px; margin-bottom: 15px;}
+        
+        .question-img { max-width: 200px; border-radius: 10px; display: block; margin: 10px 0; border: 2px dashed #ff9a9e; }
+        
+        .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;}
+        .option-btn { padding: 12px 15px; background: white; border: 2px solid #dfe4ea; border-radius: 12px; cursor: pointer; font-family: inherit; font-size: 16px; text-align: left; transition: 0.2s; position: relative;}
+        .option-btn.selected { background: #e0f8e9; border-color: #2ed573; font-weight: bold; color: #2f3542; }
+        .option-btn.multi-selected { background: #eaf1ff; border-color: #70a1ff; font-weight: bold; color: #2f3542; }
+        
+        .fill-blank-row { line-height: 2.5;}
+        .fill-blank-row input { padding: 8px; border: 2px dashed var(--primary); border-radius: 8px; font-size: 18px; width: 150px; text-align: center; color: #e15f41; font-weight: bold; background: #ffeaa7; margin: 0 5px; }
+        
+        .match-row { display: flex; align-items: center; justify-content: space-between; background: white; padding: 12px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid #ff9ff3; }
+        .match-row select { padding: 8px; border-radius: 8px; border: 2px solid #7bed9f; font-family: inherit; font-weight: bold; max-width: 50%;}
+
+        /* GÕ VĂN BẢN */
+        .sample-text { background: #fffacd; border-left: 5px solid #f1c40f; padding: 15px; margin-bottom: 15px; font-family: 'Courier New', Courier, monospace; font-size: 18px; font-weight: bold; white-space: pre-wrap; border-radius: 0 10px 10px 0;}
+        .typing-area { width: 100%; border: 3px dashed #70a1ff; border-radius: 12px; padding: 15px; font-size: 16px; font-family: inherit; resize: vertical; box-sizing: border-box; background: #fff;}
+        .typing-area:focus { outline: none; border-color: #5352ed; background: #f8faff; }
+        
+        /* CÔNG CỤ VẼ */
+        .draw-container { background: white; border: 3px dashed #ff9a9e; border-radius: 15px; padding: 10px; }
+        .drawing-board { border-radius: 10px; background: #fff; cursor: crosshair; touch-action: none; display: block; margin: 0 auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); border: 1px solid #dfe4ea;}
+        .draw-controls { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;}
+        .color-picker { width: 45px; height: 45px; padding: 0; border: none; border-radius: 50%; cursor: pointer; overflow: hidden; }
+        .btn-draw-tool { padding: 10px 15px; background: #f1f2f6; color: #2f3542; border: 2px solid #dfe4ea; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit; transition: 0.2s;}
+        .btn-draw-tool.active { background: #70a1ff; color: white; border-color: #70a1ff; box-shadow: 0 4px 8px rgba(112, 161, 255, 0.4);}
+        .btn-clear-draw { padding: 10px 15px; background: #ff4757; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit;}
+        .btn-save-draw { padding: 10px 15px; background: #2ed573; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit; transition: 0.2s;}
+        .btn-save-draw:hover { background: #26de81; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(46, 213, 115, 0.4);}
+
+        /* SẮP XẾP KÉO THẢ */
+        .sort-list { display: flex; flex-direction: column; gap: 10px; padding: 5px 0;}
+        .sort-item { display: flex; align-items: center; padding: 12px 15px; background: white; border: 2px solid #dfe4ea; border-radius: 12px; font-weight: bold; cursor: grab; transition: transform 0.2s, box-shadow 0.2s; user-select: none; }
+        .sort-item:active { cursor: grabbing; }
+        .sort-item.dragging { opacity: 0.6; box-shadow: 0 10px 20px rgba(0,0,0,0.15); transform: scale(1.02); border-color: #70a1ff; z-index: 10;}
+        .drag-handle { color: #a4b0be; margin-right: 15px; font-size: 20px; font-weight: normal;}
+
+        /* PHÂN LOẠI NHÓM */
+        .items-container { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; padding: 15px; background: #eaf1ff; border-radius: 15px; border: 3px dashed #70a1ff; justify-content: center; min-height: 50px;}
+        .draggable-item { background: linear-gradient(135deg, #70a1ff, #5352ed); color: white; padding: 10px 15px; border-radius: 15px; cursor: grab; font-weight: bold; user-select: none; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        .draggable-item.dragging { opacity: 0.5; }
+        .buckets-container { display: flex; gap: 15px; }
+        .bucket { flex: 1; border: 3px dashed #a4b0be; border-radius: 15px; background: #fff; display: flex; flex-direction: column; overflow: hidden; }
+        .bucket-title { background: #eccc68; padding: 12px; text-align: center; font-weight: bold; margin: 0; color: #2f3542; border-bottom: 2px dashed #a4b0be;}
+        .bucket-zone { flex: 1; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; min-height: 120px; background: #fdfdfd; transition: 0.2s;}
+        .bucket-zone.drag-over { background: #fffacd; border-color: #ff7f50;}
+
+        .submit-btn { display: block; width: 100%; padding: 18px; background: linear-gradient(135deg, #ff6b81, #ff4757); color: white; font-size: 22px; font-weight: 800; border: none; border-radius: 20px; cursor: pointer; box-shadow: 0 8px 15px rgba(255, 107, 129, 0.4); }
+
+        /* KẾT QUẢ VÀ GIẢI THÍCH */
+        .result-screen { text-align: center; animation: fadeIn 0.5s; padding: 10px;}
+        .score-circle { width: 150px; height: 150px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: 900; color: white; margin: 20px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .score-perfect { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+        .score-good { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: #2f3542;}
+        .score-try { background: linear-gradient(135deg, #ff9a9e 0%, #ff6b81 100%); color: white; }
+        
+        .review-container { text-align: left; background: white; border-radius: 20px; padding: 25px; margin-top: 25px; border: 3px solid #f1f2f6;}
+        .review-item { padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #dfe4ea; background: #f8f9fa; }
+        .item-correct { border-left-color: #2ed573; background: #e0f8e9; }
+        .item-wrong { border-left-color: #ff4757; background: #ffebee; }
+        .r-question { font-weight: bold; color: #2f3542; margin-bottom: 8px; }
+        .r-student { color: #57606f; }
+        .r-correct { color: #2ed573; font-weight: bold; margin-top: 8px;}
+        .r-expl { margin-top: 10px; padding: 10px 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107; color: #d35400; font-size: 14px; font-weight: 600;}
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 600px) { 
+            .form-row { flex-direction: column; } .buckets-container { flex-direction: column; }
+            .score-circle{ width: 120px; height: 120px; font-size: 35px; } 
+            .match-row { flex-direction: column; align-items: flex-start; gap: 10px;} .match-row select {max-width: 100%; width: 100%;} 
+        }
+    </style>
+</head>
+<body>
+    <div id="timerDisplay">⏳ 00:00</div>
+
+    <div class="container">
+        <button class="teacher-login-btn" onclick="toggleAdmin()">⚙️ Giáo viên</button>
+
+        <!-- BẢNG ĐIỀU KHIỂN CỦA GIÁO VIÊN -->
+        <div id="adminPanel">
+            <h2 class="admin-title">🛠 CẤU TRÚC PHIẾU BÀI TẬP</h2>
+            
+            <div class="admin-section">
+                <h4>Cài đặt chung</h4>
+                <div class="form-row">
+                    <div class="form-group"><label>Tiêu đề chính:</label><input type="text" id="cfg_title"></div>
+                    <div class="form-group"><label>Chủ đề bài học:</label><input type="text" id="cfg_subtitle"></div>
+                </div>
+                <div class="form-group"><label>Mục tiêu bài học (Hỗ trợ HTML):</label><textarea id="cfg_obj"></textarea></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>⏳ Giới hạn thời gian (phút):</label>
+                        <input type="number" id="cfg_time" placeholder="Nhập số phút (0 = không giới hạn)">
+                    </div>
+                    <div class="form-group">
+                        <label>🔀 Đảo câu hỏi:</label>
+                        <select id="cfg_shuffle"><option value="false">Không xáo trộn</option><option value="true">Có xáo trộn vị trí</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="add-q-btns">
+                <button class="btn-add" onclick="addQuestion('single')">➕ 1 Đáp Án</button>
+                <button class="btn-add" onclick="addQuestion('multi')">➕ Nhiều Đáp Án</button>
+                <button class="btn-add" onclick="addQuestion('fill')">➕ Điền Khuyết</button>
+                <button class="btn-add" onclick="addQuestion('typing')">➕ Gõ Văn Bản</button>
+                <button class="btn-add" onclick="addQuestion('match')">➕ Nối Cặp</button>
+                <button class="btn-add" onclick="addQuestion('sort')">➕ Sắp Xếp</button>
+                <button class="btn-add" onclick="addQuestion('group')">➕ Phân Nhóm</button>
+                <button class="btn-add" onclick="addQuestion('draw')">➕ Vẽ Tự Do</button>
+            </div>
+
+            <div id="adminQuestionsList"></div>
+
+            <div class="admin-btns">
+                <button class="btn-save" onclick="saveAdminData(false)">💾 LƯU BẢN NHÁP</button>
+                <button class="btn-export" onclick="exportHTML()">📥 TẢI BÀI VỀ MÁY (Xuất File)</button>
+                <button class="btn-reset" onclick="resetToDefault()">Khôi phục gốc</button>
+            </div>
+        </div>
+
+        <!-- KHU VỰC LÀM BÀI -->
+        <div id="app"></div>
+    </div>
+
+    <!-- Nơi lưu trữ dữ liệu JSON khi Export -->
+    <script id="injected-data" type="application/json"></script>
+
+    <script>
+        // ==========================================
+        // 1. DỮ LIỆU ĐỘNG & BIẾN TOÀN CỤC
+        // ==========================================
+        const defaultData = {
+            meta: {
+                title: "🌱 PHIẾU BÀI TẬP CÔNG NGHỆ 4 🌱",
+                subtitle: "Chủ đề: Gieo hạt hoa, cây cảnh",
+                mascotEmoji: "👩‍🌾",
+                mascotText: "Chào các nhà nông nhí! 🌻 Hoàn thành bài để nhận điểm 10 nào!",
+                objectives: "⭐ Tóm tắt được các bước gieo hạt hoa, cây cảnh.<br>⭐ Nhớ được các dụng cụ.",
+                timeLimit: 0,
+                shuffle: false
+            },
+            questions: [
+                { id: "q0", type: "single", q: "Câu 1: Xử lí hạt giống ngâm nước ấm tỉ lệ nào?", expl: "Công thức chuẩn là 2 phần nước sôi + 3 phần nước lạnh nhé em.", opts: ["A. 3 sôi + 2 lạnh", "B. 2 sôi + 3 lạnh", "C. 1 sôi + 4 lạnh"], ans: 1 },
+                { id: "q1", type: "typing", q: "Câu 2: Em hãy gõ lại chính xác đoạn văn dưới đây:", expl: "Học sinh cần chú ý dấu chấm câu và viết hoa đầu câu.", sample: "Gieo hạt hoa, cây cảnh trong chậu là một công việc rất thú vị. Em cần chuẩn bị hạt giống, chậu và đất trồng thật tốt." },
+                { id: "q3", type: "sort", q: "Câu 3: Kéo thả các bước gieo hạt để sắp xếp cho đúng thứ tự:", expl: "Chuẩn bị -> Cho giá thể -> Gieo hạt -> Tưới nước.", items: ["Chuẩn bị dụng cụ, vật liệu", "Cho giá thể vào chậu", "Gieo hạt giống", "Tưới nhẹ nước"] },
+                { id: "q4", type: "draw", q: "Câu 4: Em hãy vẽ và tô màu một bông hoa thật đẹp nhé! 🌻", expl: "" }
+            ]
+        };
+
+        let lessonData;
+        try {
+            let injected = document.getElementById('injected-data').textContent;
+            if(injected && injected.trim() !== "") {
+                lessonData = JSON.parse(injected);
+            } else {
+                lessonData = JSON.parse(localStorage.getItem('saveDrawLessonData')) || defaultData;
+            }
+        } catch(e) { lessonData = defaultData; }
+
+        let userAnswers = {};
+        let isSubmitted = false;
+        let timerInterval = null;
+
+        const removeTones = (str) => {
+            if(!str) return "";
+            return str.toLowerCase().replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a").replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e")
+                .replace(/ì|í|ị|ỉ|ĩ/g,"i").replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o").replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u")
+                .replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y").replace(/đ/g,"d").replace(/\s+/g, ' ').trim();
+        }
+
+        // ==========================================
+        // 2. GIAO DIỆN ADMIN ĐỘNG
+        // ==========================================
+        function toggleAdmin() {
+            const panel = document.getElementById('adminPanel');
+            if(panel.style.display === "block") { panel.style.display = "none"; return; }
+            let pass = prompt("Nhập mật khẩu giáo viên:");
+            if(pass !== "tinhbien") { if(pass !== null) alert("Sai mật khẩu!"); return; }
+
+            document.getElementById('cfg_title').value = lessonData.meta.title;
+            document.getElementById('cfg_subtitle').value = lessonData.meta.subtitle;
+            document.getElementById('cfg_obj').value = lessonData.meta.objectives.replace(/<br>/g, "\n");
+            document.getElementById('cfg_time').value = lessonData.meta.timeLimit || 0;
+            document.getElementById('cfg_shuffle').value = lessonData.meta.shuffle ? "true" : "false";
+            
+            renderAdminQuestions();
+            panel.style.display = "block"; window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderAdminQuestions() {
+            const container = document.getElementById('adminQuestionsList');
+            let html = "";
+            lessonData.questions.forEach((q, i) => {
+                html += `<div class="admin-section" id="admin_q_${i}">`;
+                let explHtml = `<div class="form-group"><label>💡 Giải thích đáp án (Hiện khi xem điểm):</label><input type="text" id="cfg_${i}_expl" class="expl-input" value="${q.expl || ''}" placeholder="Nhập lời giải thích ngắn gọn..."></div>`;
+
+                if (q.type === 'single') {
+                    html += `<h4>🔘 Câu Trắc nghiệm 1 Đáp án <button class="btn-del" onclick="removeQuestion(${i})">Xóa</button></h4>
+                        <div class="form-group"><label>Câu hỏi:</label><input type="text" id="cfg_${i}_q" value="${q.q}"></div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Đáp án 1:</label><input type="text" id="cfg_${i}_opt0" value="${q.opts[0] || ''}"></div>
+                            <div class="form-group"><label>Đáp án 2:</label><input type="text" id="cfg_${i}_opt1" value="${q.opts[1] || ''}"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Đáp án 3:</label><input type="text" id="cfg_${i}_opt2" value="${q.opts[2] || ''}"></div>
+                            <div class="form-group"><label>Đáp án đúng:</label>
+                                <select id="cfg_${i}_ans"><option value="0" ${q.ans===0?'selected':''}>Đáp án 1</option><option value="1" ${q.ans===1?'selected':''}>Đáp án 2</option><option value="2" ${q.ans===2?'selected':''}>Đáp án 3</option></select>
+                            </div>
+                        </div> ${explHtml}`;
+                } 
+                else if (q.type === 'multi') {
+                    html += `<h4>☑️ Câu Trắc nghiệm Nhiều Đáp án <button class="btn-del" onclick="removeQuestion(${i})">Xóa</button></h4>
+                        <div class="form-group"><label>Câu hỏi:</label><input type="text" id="cfg_${i}_q" value="${q.q}"></div>
+                        <div class="form-row">
+                            <div class="form-group"><label><input type="checkbox" id="cfg_${i}_chk0" ${q.ans.includes(0)?'checked':''}> Lựa chọn 1:</label><input type="text" id="cfg_${i}_opt0" value="${q.opts[0] || ''}"></div>
+                            <div class="form-group"><label><input type="checkbox" id="cfg_${i}_chk1" ${q.ans.includes(1)?'checked':''}> Lựa chọn 2:</label><input type="text" id="cfg_${i}_opt1" value="${q.opts[1] || ''}"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label><input type="checkbox" id="cfg_${i}_chk2" ${q.ans.includes(2)?'checked':''}> Lựa chọn 3:</label><input type="text" id="cfg_${i}_opt2" value="${q.opts[2] || ''}"></div>
+                            <div class="form-group"><label><input type="checkbox" id="cfg_${i}_chk3" ${q.ans.includes(3)?'checked':''}> Lựa chọn 4:</label><input type="text" id="cfg_${i}_opt3" value="${q.opts[3] || ''}"></div>
+                        </div> ${explHtml}`;
+                } 
+                else if (q.type === 'fill') {
+                    html += `<h4>✍️ Câu Điền khuyết <button class="btn-del" onclick="removeQuestion(${i})">Xóa</button></h4>
+                        <div class="form-row">
+                            <div class="form-group"><label>Văn bản trước:</label><input type="text" id="cfg_${i}_pre" value="${q.pre}"></div>
+                            <div class="form-group"><label>Từ khóa (đáp án):</label><input type="text" id="cfg_${i}_ans" value="${q.ans}" style="border-color:#2ed573;"></div>
+                            <div class="form-group"><label>Văn bản sau:</label><input type="text" id="cfg_${i}_post" value="${q.post}"></div>
+                        </div> ${explHtml}`;
+                } 
+                else if (q.type === 'typing') {
+                    html += `<h4>⌨️ Câu Gõ Văn Bản <button class="btn-del" onclick="removeQuestion(${i})">Xóa</button></h4>
+                        <div class="form-group"><label>Yêu cầu:</label><input type="text" id="cfg_${i}_q" value="${q.q}"></div>
+                        <div class="form-group"><label>Nội dung mẫu (Học sinh cần gõ lại chính xác):</label><textarea id="cfg_${i}_sample" style="height:100px;">${q.sample}</textarea></div>
+                        ${explHtml}`;
+                }
+                else if (q.type === 'match') {
+                    html += `<h4>🧩 Câu Nối Cặp <button class="btn-del" onclick="removeQuestion(${i})">Xóa</button></h4>
+                        <div class="form-group"><label>Yêu cầu:</label><input type="text" id="cfg_${i}_q" value="${q.q}"></div>
+                        ${q.pairs.map((p, j) => `
+                        <div class="form-row">
+                            <div class="form-group"><label>Vế trái ${j+1}:</label><input type="text" id="cfg_${i}_l${j}" value="${p.l}"></div>
+                            <div class="form-group"><label>Vế phải (đáp án):</label><input type="text" id="cfg_${i}_r${j}" value="${p.r}"></div>
+                        </div>`).join('')} ${explHtml}`;
+                } 
+                else if (q.type === 'sort') {
+                    html += `<h4>↕️ Câu Sắp xếp thứ tự (Kéo thả) <button class="btn-del" onclick="removeQuestion(${i})">Xóa</button></h4>
+                        <div class="form-group"><label>Yêu cầu:</label><input type="text" id="cfg_${i}_q" value="${q.q}"></div>
+                        <p style="font-size:12px; color:#ff4757; margin:0;">* Hãy nhập các bước theo ĐÚNG thứ tự chuẩn từ 1 đến 4. Học sinh sẽ kéo thả để sắp xếp.</p>
+                        <div class="form-row">
+                            <div class="form-group"><label>Bước 1:</label><input type="text" id="cfg_${i}_i0" value="${q.items[0] || ''}"></div>
+                            <div class="form-group"><label>Bước 2:</label><input type="text" id="cfg_${i}_i1" value="${q.items[1] || ''}"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Bước 3:</label><input type="text" id="cfg_${i}_i2" value="${q.items[2] || ''}"></div>
+                            <div class="form-group"><label>Bước 4:</label><input type="text" id="cfg_${i}_i3" value="${q.items[3] || ''}"></div>
+                        </div> ${explHtml}`;
+                }
+                else if (q.type === 'group') {
+                    html += `<h4>📦 Câu Phân loại nhóm <button class="btn-del" onclick="removeQuestion(${i})">Xóa</button></h4>
+                        <div class="form-group"><label>Yêu cầu:</label><input type="text" id="cfg_${i}_q" value="${q.q}"></div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Tên Nhóm 1:</label><input type="text" id="cfg_${i}_b1" value="${q.b1}" style="border-color:#70a1ff;"></div>
+                            <div class="form-group"><label>Tên Nhóm 2:</label><input type="text" id="cfg_${i}_b2" value="${q.b2}" style="border-color:#ff9a9e;"></div>
+                        </div>
+                        ${q.items.map((item, j) => `
+                        <div class="form-row">
+                            <div class="form-group"><label>Thẻ ${j+1}:</label><input type="text" id="cfg_${i}_i${j}_t" value="${item.txt}"></div>
+                            <div class="form-group"><label>Thuộc nhóm:</label>
+                                <select id="cfg_${i}_i${j}_b">
+                                    <option value="1" ${item.b===1?'selected':''}>Nhóm 1</option>
+                                    <option value="2" ${item.b===2?'selected':''}>Nhóm 2</option>
+                                </select>
+                            </div>
+                        </div>`).join('')} ${explHtml}`;
+                }
+                else if (q.type === 'draw') {
+                    html += `<h4>🎨 Câu Vẽ tự do <button class="btn-del" onclick="removeQuestion(${i})">Xóa</button></h4>
+                        <div class="form-group"><label>Yêu cầu vẽ:</label><input type="text" id="cfg_${i}_q" value="${q.q}"></div>
+                        <p style="font-size:12px; color:#ff4757; margin:0;">* Dạng Vẽ tự do sẽ KHÔNG tính vào tổng điểm, chỉ dùng để giáo viên nhận xét.</p>
+                        `;
+                }
+                html += `</div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function addQuestion(type) {
+            if (lessonData.questions.length >= 20) { alert("Tối đa 20 câu hỏi cho một đề!"); return; }
+            let id = "q" + Date.now(); let newQ = {};
+            if(type === 'single') newQ = { id, type, q: "Câu hỏi mới", expl: "", opts: ["A", "B", "C"], ans: 0 };
+            else if(type === 'multi') newQ = { id, type, q: "Câu nhiều đáp án", expl: "", opts: ["1", "2", "3", "4"], ans: [0] };
+            else if(type === 'fill') newQ = { id, type, pre: "Trước", post: "Sau", expl: "", ans: "đáp án" };
+            else if(type === 'typing') newQ = { id, type, q: "Em hãy gõ lại chính xác đoạn văn dưới đây:", expl: "", sample: "Đây là văn bản mẫu." };
+            else if(type === 'match') newQ = { id, type, q: "Nối các cặp", expl: "", pairs: [{l:"Trái 1", r:"Phải 1"}, {l:"Trái 2", r:"Phải 2"}] };
+            else if(type === 'sort') newQ = { id, type, q: "Kéo thả để sắp xếp thứ tự", expl: "", items: ["Bước 1", "Bước 2", "Bước 3", "Bước 4"] };
+            else if(type === 'group') newQ = { id, type, q: "Kéo thả phân loại", expl: "", b1: "Nhóm 1", b2: "Nhóm 2", items: [{txt:"Thẻ 1", b:1}, {txt:"Thẻ 2", b:2}, {txt:"Thẻ 3", b:1}, {txt:"Thẻ 4", b:2}] };
+            else if(type === 'draw') newQ = { id, type, q: "Em hãy vẽ một bức tranh", expl: "" };
+            
+            saveCurrentAdminState(); lessonData.questions.push(newQ); renderAdminQuestions();
+        }
+
+        function removeQuestion(index) {
+            if(confirm("Xóa câu hỏi này?")) {
+                saveCurrentAdminState(); lessonData.questions.splice(index, 1); renderAdminQuestions();
+            }
+        }
+
+        function saveCurrentAdminState() {
+            lessonData.questions.forEach((q, i) => {
+                let elExpl = document.getElementById(`cfg_${i}_expl`);
+                if(elExpl) q.expl = elExpl.value;
+
+                if(q.type === 'single') {
+                    q.q = document.getElementById(`cfg_${i}_q`).value;
+                    q.opts = [0,1,2].map(j => document.getElementById(`cfg_${i}_opt${j}`).value);
+                    q.ans = parseInt(document.getElementById(`cfg_${i}_ans`).value);
+                } else if(q.type === 'multi') {
+                    q.q = document.getElementById(`cfg_${i}_q`).value;
+                    q.opts = [0,1,2,3].map(j => document.getElementById(`cfg_${i}_opt${j}`).value);
+                    q.ans = []; [0,1,2,3].forEach(j => { if(document.getElementById(`cfg_${i}_chk${j}`).checked) q.ans.push(j); });
+                } else if(q.type === 'fill') {
+                    q.pre = document.getElementById(`cfg_${i}_pre`).value;
+                    q.ans = document.getElementById(`cfg_${i}_ans`).value;
+                    q.post = document.getElementById(`cfg_${i}_post`).value;
+                } else if(q.type === 'typing') {
+                    q.q = document.getElementById(`cfg_${i}_q`).value;
+                    q.sample = document.getElementById(`cfg_${i}_sample`).value;
+                } else if(q.type === 'match') {
+                    q.q = document.getElementById(`cfg_${i}_q`).value;
+                    for(let j=0; j<q.pairs.length; j++) {
+                        q.pairs[j].l = document.getElementById(`cfg_${i}_l${j}`).value;
+                        q.pairs[j].r = document.getElementById(`cfg_${i}_r${j}`).value;
+                    }
+                } else if(q.type === 'sort') {
+                    q.q = document.getElementById(`cfg_${i}_q`).value;
+                    q.items = [0,1,2,3].map(j => document.getElementById(`cfg_${i}_i${j}`).value).filter(v => v.trim() !== "");
+                } else if(q.type === 'group') {
+                    q.q = document.getElementById(`cfg_${i}_q`).value;
+                    q.b1 = document.getElementById(`cfg_${i}_b1`).value;
+                    q.b2 = document.getElementById(`cfg_${i}_b2`).value;
+                    for(let j=0; j<q.items.length; j++) {
+                        q.items[j].txt = document.getElementById(`cfg_${i}_i${j}_t`).value;
+                        q.items[j].b = parseInt(document.getElementById(`cfg_${i}_i${j}_b`).value);
+                    }
+                } else if(q.type === 'draw') {
+                    q.q = document.getElementById(`cfg_${i}_q`).value;
+                }
+            });
+        }
+
+        function saveAdminData(isExport = false) {
+            lessonData.meta.title = document.getElementById('cfg_title').value;
+            lessonData.meta.subtitle = document.getElementById('cfg_subtitle').value;
+            lessonData.meta.objectives = document.getElementById('cfg_obj').value.replace(/\n/g, "<br>");
+            lessonData.meta.timeLimit = parseInt(document.getElementById('cfg_time').value) || 0;
+            lessonData.meta.shuffle = document.getElementById('cfg_shuffle').value === "true";
+            
+            saveCurrentAdminState();
+            localStorage.setItem('saveDrawLessonData', JSON.stringify(lessonData));
+            
+            if(!isExport) {
+                alert("✅ Đã lưu cấu hình bài tập!");
+                document.getElementById('adminPanel').style.display = "none";
+                renderApp();
+            }
+        }
+
+        function exportHTML() {
+            saveAdminData(true); 
+            let htmlCopy = document.documentElement.cloneNode(true);
+            
+            htmlCopy.querySelector('#adminPanel').style.display = 'none';
+            htmlCopy.querySelector('#app').innerHTML = ''; 
+            let timerEl = htmlCopy.querySelector('#timerDisplay');
+            if(timerEl) timerEl.style.display = 'none';
+
+            let dataScript = htmlCopy.querySelector('#injected-data');
+            dataScript.textContent = JSON.stringify(lessonData);
+            
+            let finalHTML = "<!DOCTYPE html>\n<html lang=\"vi\">\n" + htmlCopy.innerHTML + "\n</html>";
+            let blob = new Blob([finalHTML], {type: "text/html;charset=utf-8"});
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Phieu_Bai_Tap_Hoc_Sinh.html";
+            link.click();
+        }
+
+        function resetToDefault() {
+            if(confirm("Khôi phục bài gốc? Mọi thiết kế của bạn sẽ bị xóa bỏ.")) {
+                localStorage.removeItem('saveDrawLessonData');
+                lessonData = JSON.parse(JSON.stringify(defaultData)); 
+                document.getElementById('adminPanel').style.display = "none";
+                renderApp();
+            }
+        }
+
+        // ==========================================
+        // 3. ENGINE KẾT XUẤT CHO HỌC SINH
+        // ==========================================
+        function startTimer(minutes) {
+            clearInterval(timerInterval);
+            let timeRemaining = minutes * 60;
+            let timerEl = document.getElementById('timerDisplay');
+            timerEl.style.display = 'block';
+            
+            let updateDisplay = () => {
+                let m = Math.floor(timeRemaining / 60);
+                let s = timeRemaining % 60;
+                timerEl.innerText = `⏳ ${m}:${s<10?'0':''}${s}`;
+            };
+            updateDisplay();
+
+            timerInterval = setInterval(() => {
+                if(isSubmitted) { clearInterval(timerInterval); timerEl.style.display = 'none'; return; }
+                timeRemaining--; updateDisplay();
+                if(timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    timerEl.style.display = 'none';
+                    alert("⏰ Đã hết thời gian làm bài! Hệ thống tự động nộp bài.");
+                    gradeTest();
+                }
+            }, 1000);
+        }
+
+        function renderApp() {
+            isSubmitted = false;
+            userAnswers = {}; 
+            const app = document.getElementById('app');
+            
+            if(lessonData.meta.timeLimit > 0) startTimer(lessonData.meta.timeLimit);
+            else { clearInterval(timerInterval); document.getElementById('timerDisplay').style.display = 'none'; }
+
+            let html = `
+                <div id="quizContainer">
+                    <h1>${lessonData.meta.title}</h1>
+                    <h3 class="subtitle">${lessonData.meta.subtitle}</h3>
+                    <div class="mascot-container">
+                        <div class="mascot-emoji">${lessonData.meta.mascotEmoji}</div>
+                        <div class="mascot-bubble">${lessonData.meta.mascotText}</div>
+                    </div>
+                    <div class="student-info">
+                        <input type="text" id="studentName" placeholder="👦👧 Họ và tên của em là...">
+                        <input type="text" id="studentClass" placeholder="🏫 Lớp...">
+                    </div>
+                    <div class="objectives">🎯 <strong>Mục tiêu bài học:</strong><br>${lessonData.meta.objectives}</div>
+            `;
+
+            let displayQ = [...lessonData.questions];
+            if(lessonData.meta.shuffle) displayQ.sort(() => Math.random() - 0.5);
+
+            displayQ.forEach((q, idx) => {
+                html += `<div class="section"><h2 class="section-title">Câu ${idx+1}</h2>`;
+                
+                if (q.type === 'single') {
+                    html += `<p><strong>${q.q}</strong></p><div class="options" id="${q.id}">`;
+                    q.opts.forEach((opt, j) => {
+                        if(opt.trim() !== "") { html += `<button class="option-btn" onclick="selectSingle('${q.id}', this, ${j})">${opt}</button>`; }
+                    });
+                    html += `</div>`;
+                } 
+                else if (q.type === 'multi') {
+                    html += `<p><strong>${q.q}</strong></p><div class="options" id="${q.id}">`;
+                    q.opts.forEach((opt, j) => {
+                        if(opt.trim() !== "") { html += `<button class="option-btn" onclick="toggleMulti('${q.id}', this, ${j})">⬜ ${opt}</button>`; }
+                    });
+                    html += `</div>`; userAnswers[q.id] = []; 
+                }
+                else if (q.type === 'fill') {
+                    html += `<div class="fill-blank-row"><strong>${q.pre}</strong> <input type="text" id="${q.id}"> <strong>${q.post}</strong></div>`;
+                }
+                else if (q.type === 'typing') {
+                    html += `<p><strong>${q.q}</strong></p>
+                             <div class="sample-text">${q.sample}</div>
+                             <textarea id="${q.id}" class="typing-area" rows="4" placeholder="Em hãy gõ lại chính xác nội dung vào đây..."></textarea>`;
+                }
+                else if (q.type === 'match') {
+                    html += `<p><strong>${q.q}</strong></p>`;
+                    let rightOptions = q.pairs.map(p => p.r).filter(r => r.trim()!=="").sort(() => Math.random() - 0.5);
+                    q.pairs.forEach((p, j) => {
+                        if(p.l.trim() !== "") {
+                            html += `<div class="match-row">
+                                <strong>${p.l}</strong>
+                                <select id="${q.id}_${j}"><option value="">-- Chọn đáp án --</option>${rightOptions.map(r => `<option value="${r}">${r}</option>`).join('')}</select>
+                            </div>`;
+                        }
+                    });
+                }
+                else if (q.type === 'sort') {
+                    html += `<p><strong>${q.q}</strong></p><div class="sort-list" id="sort_${q.id}">`;
+                    let shuffledItems = [...q.items].sort(() => Math.random() - 0.5);
+                    shuffledItems.forEach(item => {
+                        html += `<div class="sort-item" draggable="true" data-val="${item}">
+                                    <span class="drag-handle">⠿</span>
+                                    <span>${item}</span>
+                                 </div>`;
+                    });
+                    html += `</div>`;
+                }
+                else if (q.type === 'group') {
+                    html += `<p><strong>${q.q}</strong></p>
+                             <div class="items-container" id="group_items_${q.id}">`;
+                    let shuffledItems = [...q.items].filter(i=>i.txt.trim()!=="").sort(() => Math.random() - 0.5);
+                    shuffledItems.forEach(item => {
+                        html += `<div class="draggable-item" draggable="true" data-id="${item.txt}">${item.txt}</div>`;
+                    });
+                    html += `</div>
+                             <div class="buckets-container">
+                                <div class="bucket"><h4 class="bucket-title" style="background:#70a1ff; color:white;">${q.b1}</h4><div class="bucket-zone" data-bucket="1"></div></div>
+                                <div class="bucket"><h4 class="bucket-title" style="background:#ff9a9e; color:white;">${q.b2}</h4><div class="bucket-zone" data-bucket="2"></div></div>
+                             </div>`;
+                }
+                else if (q.type === 'draw') {
+                    html += `<p><strong>${q.q}</strong></p>
+                            <div class="draw-container">
+                                <canvas id="canvas_${q.id}" class="drawing-board" width="600" height="300" style="max-width:100%;"></canvas>
+                                <div class="draw-controls">
+                                    <input type="color" id="color_${q.id}" class="color-picker" value="#ff4757" onchange="updateDrawColor('${q.id}', this.value)" title="Chọn màu">
+                                    <button id="btn_pen_${q.id}" class="btn-draw-tool active" onclick="setDrawTool('${q.id}', 'pen')">✏️ Bút vẽ</button>
+                                    <button id="btn_fill_${q.id}" class="btn-draw-tool" onclick="setDrawTool('${q.id}', 'fill')">🪣 Tô màu</button>
+                                    <button class="btn-clear-draw" onclick="clearCanvas('canvas_${q.id}')">🔄 Xóa lại</button>
+                                    <button class="btn-save-draw" onclick="saveCanvas('canvas_${q.id}')">💾 Lưu hình</button>
+                                </div>
+                            </div>`;
+                }
+                html += `</div>`;
+            });
+
+            html += `<button class="submit-btn" onclick="gradeTest()">🎉 NỘP BÀI VÀ XEM ĐIỂM 🎉</button></div>`;
+            app.innerHTML = html;
+
+            lessonData.questions.forEach(q => { 
+                if(q.type === 'draw') initCanvas(`canvas_${q.id}`); 
+            });
+            initDragAndDrop();
+        }
+
+        window.selectSingle = function(qId, btn, val) {
+            let btns = document.getElementById(qId).getElementsByClassName("option-btn");
+            for(let i=0; i<btns.length; i++) btns[i].classList.remove("selected");
+            btn.classList.add("selected"); userAnswers[qId] = val;
+        }
+
+        window.toggleMulti = function(qId, btn, val) {
+            let arr = userAnswers[qId];
+            if(arr.includes(val)) { arr.splice(arr.indexOf(val), 1); btn.classList.remove("multi-selected"); btn.innerHTML = btn.innerHTML.replace("✅", "⬜"); } 
+            else { arr.push(val); btn.classList.add("multi-selected"); btn.innerHTML = btn.innerHTML.replace("⬜", "✅"); }
+        }
+
+        // ==========================================
+        // CƠ CHẾ KÉO THẢ (DRAG & DROP) CHO SORT VÀ GROUP
+        // ==========================================
+        function initDragAndDrop() {
+            let draggedItem = null;
+            let dragType = null; 
+
+            // Group Drag & Drop
+            const groupDraggables = document.querySelectorAll('.draggable-item');
+            const bucketZones = document.querySelectorAll('.bucket-zone');
+            const itemsContainers = document.querySelectorAll('.items-container');
+
+            groupDraggables.forEach(item => {
+                item.addEventListener('dragstart', function(e) { 
+                    if(isSubmitted) { e.preventDefault(); return; }
+                    draggedItem = this; dragType = 'group';
+                    setTimeout(() => this.classList.add('dragging'), 0); 
+                });
+                item.addEventListener('dragend', function() { setTimeout(() => { this.classList.remove('dragging'); draggedItem = null; }, 0); });
+            });
+
+            bucketZones.forEach(zone => {
+                zone.addEventListener('dragover', function(e) { if(dragType === 'group') { e.preventDefault(); this.classList.add('drag-over'); }});
+                zone.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+                zone.addEventListener('drop', function(e) { 
+                    if(dragType === 'group') { e.preventDefault(); this.classList.remove('drag-over'); if(draggedItem) this.appendChild(draggedItem); }
+                });
+            });
+
+            itemsContainers.forEach(container => {
+                container.addEventListener('dragover', e => { if(dragType === 'group') e.preventDefault(); });
+                container.addEventListener('drop', function(e) { if(dragType === 'group' && draggedItem) { e.preventDefault(); this.appendChild(draggedItem); }});
+            });
+
+            // Sort Drag & Drop
+            const sortLists = document.querySelectorAll('.sort-list');
+            sortLists.forEach(list => {
+                list.addEventListener('dragstart', e => {
+                    if(isSubmitted) { e.preventDefault(); return; }
+                    if(e.target.classList.contains('sort-item')) {
+                        draggedItem = e.target; dragType = 'sort';
+                        setTimeout(() => e.target.classList.add('dragging'), 0);
+                    }
+                });
+                list.addEventListener('dragend', e => {
+                    if(e.target.classList.contains('sort-item')) { e.target.classList.remove('dragging'); draggedItem = null; }
+                });
+                list.addEventListener('dragover', e => {
+                    if(dragType === 'sort') {
+                        e.preventDefault();
+                        const afterElement = getDragAfterElement(list, e.clientY);
+                        if (!draggedItem) return;
+                        if (afterElement == null) { list.appendChild(draggedItem); } 
+                        else { list.insertBefore(draggedItem, afterElement); }
+                    }
+                });
+                
+                list.addEventListener('touchstart', e => {
+                    if(isSubmitted) return;
+                    if(e.target.closest('.sort-item')) {
+                        draggedItem = e.target.closest('.sort-item'); dragType = 'sort';
+                        draggedItem.classList.add('dragging');
+                    }
+                }, {passive: true});
+                list.addEventListener('touchmove', e => {
+                    if(dragType === 'sort' && draggedItem) {
+                        e.preventDefault(); 
+                        let touch = e.touches[0];
+                        const afterElement = getDragAfterElement(list, touch.clientY);
+                        if (afterElement == null) list.appendChild(draggedItem);
+                        else list.insertBefore(draggedItem, afterElement);
+                    }
+                }, {passive: false});
+                list.addEventListener('touchend', e => {
+                    if(draggedItem && dragType === 'sort') { draggedItem.classList.remove('dragging'); draggedItem = null; }
+                });
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.sort-item:not(.dragging)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } 
+                else { return closest; }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // ==========================================
+        // CÔNG CỤ VẼ TỰ DO VÀ LƯU HÌNH VẼ
+        // ==========================================
+        const canvasMemory = {};
+        window.updateDrawColor = function(id, color) { if(canvasMemory['canvas_'+id]) canvasMemory['canvas_'+id].color = color; }
+        window.setDrawTool = function(id, tool) {
+            if(canvasMemory['canvas_'+id]) {
+                canvasMemory['canvas_'+id].tool = tool;
+                document.getElementById('btn_pen_'+id).classList.remove('active');
+                document.getElementById('btn_fill_'+id).classList.remove('active');
+                document.getElementById('btn_'+tool+'_'+id).classList.add('active');
+            }
+        }
+
+        function floodFill(ctx, startX, startY, fillColorHex) {
+            const canvasWidth = ctx.canvas.width; const canvasHeight = ctx.canvas.height;
+            const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight); const data = imageData.data;
+            const getPixelPos = (x, y) => (y * canvasWidth + x) * 4;
+            const startPos = getPixelPos(startX, startY);
+            const startR = data[startPos]; const startG = data[startPos + 1]; const startB = data[startPos + 2]; const startA = data[startPos + 3];
+
+            let hex = fillColorHex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(c => c+c).join('');
+            const r = parseInt(hex.substring(0, 2), 16); const g = parseInt(hex.substring(2, 4), 16); const b = parseInt(hex.substring(4, 6), 16); const a = 255;
+            if (startR === r && startG === g && startB === b && startA === a) return;
+
+            const matchStartColor = (pos) => (data[pos] === startR && data[pos + 1] === startG && data[pos + 2] === startB && data[pos + 3] === startA);
+            const colorPixel = (pos) => { data[pos] = r; data[pos + 1] = g; data[pos + 2] = b; data[pos + 3] = a; };
+            const pixelStack = [[startX, startY]];
+
+            while (pixelStack.length) {
+                const newPos = pixelStack.pop(); let x = newPos[0]; let y = newPos[1];
+                let pixelPos = getPixelPos(x, y);
+                while (y-- >= 0 && matchStartColor(pixelPos)) { pixelPos -= canvasWidth * 4; }
+                pixelPos += canvasWidth * 4; ++y;
+                let reachLeft = false; let reachRight = false;
+                while (y++ < canvasHeight - 1 && matchStartColor(pixelPos)) {
+                    colorPixel(pixelPos);
+                    if (x > 0) {
+                        if (matchStartColor(pixelPos - 4)) { if (!reachLeft) { pixelStack.push([x - 1, y]); reachLeft = true; } } 
+                        else if (reachLeft) { reachLeft = false; }
+                    }
+                    if (x < canvasWidth - 1) {
+                        if (matchStartColor(pixelPos + 4)) { if (!reachRight) { pixelStack.push([x + 1, y]); reachRight = true; } } 
+                        else if (reachRight) { reachRight = false; }
+                    }
+                    pixelPos += canvasWidth * 4;
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function initCanvas(id) {
+            let canvas = document.getElementById(id); if(!canvas) return;
+            let ctx = canvas.getContext('2d');
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            canvasMemory[id] = { ctx: ctx, touched: false, color: '#ff4757', tool: 'pen' };
+            let painting = false;
+
+            function getPos(e) {
+                let rect = canvas.getBoundingClientRect();
+                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                let scaleX = canvas.width / rect.width; let scaleY = canvas.height / rect.height;
+                return { x: Math.floor((clientX - rect.left) * scaleX), y: Math.floor((clientY - rect.top) * scaleY) };
+            }
+
+            function startPos(e) { 
+                if(isSubmitted) return;
+                let mem = canvasMemory[id]; mem.touched = true; let pos = getPos(e);
+                if(mem.tool === 'fill') { floodFill(ctx, pos.x, pos.y, mem.color); return; }
+                painting = true; draw(e); 
+            }
+            function endPos() { painting = false; ctx.beginPath(); }
+            function draw(e) {
+                let mem = canvasMemory[id]; if(!painting || mem.tool !== 'pen' || isSubmitted) return;
+                e.preventDefault(); let pos = getPos(e);
+                ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = mem.color;
+                ctx.lineTo(pos.x, pos.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
+            }
+
+            canvas.addEventListener('mousedown', startPos); canvas.addEventListener('mouseup', endPos);
+            canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseleave', endPos);
+            canvas.addEventListener('touchstart', startPos, {passive:false}); canvas.addEventListener('touchend', endPos);
+            canvas.addEventListener('touchmove', draw, {passive:false});
+        }
+
+        window.clearCanvas = function(id) {
+            if(isSubmitted) return;
+            let canvas = document.getElementById(id); let mem = canvasMemory[id];
+            if(canvas && mem) { mem.ctx.fillStyle = "#ffffff"; mem.ctx.fillRect(0, 0, canvas.width, canvas.height); mem.touched = false; }
+        }
+
+        window.saveCanvas = function(id) {
+            let canvas = document.getElementById(id);
+            if(canvas) {
+                let link = document.createElement('a');
+                link.download = 'hinh-ve-cua-em.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+        }
+
+        // ==========================================
+        // 4. CHẤM ĐIỂM & GỬI LÊN GOOGLE SHEETS
+        // ==========================================
+        window.gradeTest = function() {
+            if(isSubmitted) return; 
+            isSubmitted = true;
+            document.getElementById('timerDisplay').style.display = 'none';
+            
+            document.querySelectorAll('.sort-item, .draggable-item').forEach(el => {
+                el.setAttribute('draggable', 'false'); el.style.cursor = 'default';
+            });
+
+            let name = document.getElementById('studentName').value || "Bạn nhỏ";
+            let score = 0; let total = 0; let unansweredPoints = 0; let reviewHTML = ""; 
+
+            lessonData.questions.forEach((q, i) => {
+                let isCorrect = false; let rHTML = ""; 
+                let explHtml = (q.expl && q.expl.trim() !== "") ? `<div class="r-expl">💡 <b>Giải thích:</b> ${q.expl}</div>` : "";
+
+                if (q.type === 'single') {
+                    total++;
+                    let sAns = userAnswers[q.id];
+                    if (sAns === undefined) unansweredPoints++;
+                    isCorrect = (sAns === q.ans); if(isCorrect) score++;
+                    let sAnsText = sAns !== undefined ? q.opts[sAns] : "Chưa chọn";
+                    rHTML = `<div class="r-question">Câu ${i+1}: ${q.q}</div><div class="r-student">Em chọn: <b>${sAnsText}</b> ${isCorrect?'✅':'❌'}</div>${!isCorrect?`<div class="r-correct">👉 Đúng là: ${q.opts[q.ans]}</div>`:''}`;
+                } 
+                else if (q.type === 'multi') {
+                    total++;
+                    let sAnsArr = userAnswers[q.id] ? userAnswers[q.id].slice().sort() : [];
+                    if (sAnsArr.length === 0) unansweredPoints++;
+                    let cAnsArr = q.ans.slice().sort();
+                    isCorrect = (JSON.stringify(sAnsArr) === JSON.stringify(cAnsArr)); if(isCorrect) score++;
+                    let sAnsText = sAnsArr.length > 0 ? sAnsArr.map(idx => q.opts[idx]).join(" | ") : "Chưa chọn";
+                    let cAnsText = cAnsArr.map(idx => q.opts[idx]).join(" | ");
+                    rHTML = `<div class="r-question">Câu ${i+1}: ${q.q}</div><div class="r-student">Em chọn: <b>${sAnsText}</b> ${isCorrect?'✅':'❌'}</div>${!isCorrect?`<div class="r-correct">👉 Đúng là: ${cAnsText}</div>`:''}`;
+                }
+                else if (q.type === 'fill') {
+                    total++;
+                    let inputVal = document.getElementById(q.id).value.trim();
+                    if (inputVal === "") unansweredPoints++;
+                    isCorrect = (removeTones(inputVal) === removeTones(q.ans)); if(isCorrect && inputVal !== "") score++;
+                    rHTML = `<div class="r-question">Câu ${i+1}: ${q.pre} ___ ${q.post}</div><div class="r-student">Em điền: <b>${inputVal||"Trống"}</b> ${isCorrect?'✅':'❌'}</div>${!isCorrect?`<div class="r-correct">👉 Cần điền: ${q.ans}</div>`:''}`;
+                }
+                else if (q.type === 'typing') {
+                    total++;
+                    let inputVal = document.getElementById(q.id).value;
+                    let normInput = inputVal.trim().replace(/\s+/g, ' ');
+                    let normSample = q.sample.trim().replace(/\s+/g, ' ');
+                    
+                    if (normInput === "") unansweredPoints++;
+                    isCorrect = (normInput.toLowerCase() === normSample.toLowerCase());
+                    if(isCorrect && normInput !== "") score++;
+                    
+                    rHTML = `<div class="r-question">Câu ${i+1}: ${q.q}</div><div class="r-student">Em gõ: <br><b>${inputVal||"Trống"}</b> <br>${isCorrect?'✅ Chính xác':'❌ Chưa chính xác'}</div>${!isCorrect?`<div class="r-correct">👉 Mẫu chuẩn: <br>${q.sample}</div>`:''}`;
+                }
+                else if (q.type === 'match') {
+                    let matchCorrect = true;
+                    q.pairs.forEach((p, j) => {
+                        if(p.l.trim() === "") return; total++;
+                        let sVal = document.getElementById(`${q.id}_${j}`).value;
+                        if (sVal === "") unansweredPoints++;
+                        let isPairCorrect = (sVal === p.r); if(isPairCorrect) score++; else matchCorrect = false;
+                        rHTML += `<div style="margin-bottom:8px;"><div class="r-question">Câu ${i+1}.${j+1}: Nối "${p.l}" với...</div>
+                            <div class="r-student">Em chọn: <b>${sVal||"Trống"}</b> ${isPairCorrect?'✅':'❌'}</div>
+                            ${!isPairCorrect?`<div class="r-correct">👉 Đúng là: ${p.r}</div>`:''}</div>`;
+                    });
+                    isCorrect = matchCorrect; 
+                }
+                else if (q.type === 'sort') {
+                    total++;
+                    let curItems = Array.from(document.getElementById(`sort_${q.id}`).querySelectorAll('.sort-item')).map(el => el.getAttribute('data-val'));
+                    isCorrect = JSON.stringify(curItems) === JSON.stringify(q.items);
+                    if(isCorrect) score++;
+                    rHTML = `<div class="r-question">Câu ${i+1}: ${q.q}</div><div class="r-student">Trật tự em xếp: ${isCorrect?'✅ Chính xác':'❌ Chưa đúng thứ tự'}</div>${!isCorrect?`<div class="r-correct">👉 Thứ tự chuẩn: <br> ${q.items.map((it, idx) => `${idx+1}. ${it}`).join("<br>")}</div>`:''}`;
+                }
+                else if (q.type === 'group') {
+                    total++;
+                    isCorrect = true; let wrongItems = [];
+                    let unassigned = document.getElementById('group_items_'+q.id).children.length;
+                    if (unassigned === q.items.length) unansweredPoints++; 
+                    
+                    q.items.forEach(item => {
+                        if(item.txt.trim() === "") return;
+                        let el = document.querySelector(`.draggable-item[data-id="${item.txt}"]`);
+                        let bucket = el ? el.closest('.bucket-zone') : null;
+                        let bucketId = bucket ? parseInt(bucket.getAttribute('data-bucket')) : 0;
+                        if(bucketId !== item.b) { isCorrect = false; wrongItems.push(item.txt); }
+                    });
+                    if(isCorrect) score++;
+                    rHTML = `<div class="r-question">Câu ${i+1}: ${q.q}</div><div class="r-student">Phân loại: ${isCorrect?'✅ Hoàn toàn chính xác':'❌ Sai vị trí các thẻ: '+wrongItems.join(", ")}</div>`;
+                }
+                else if (q.type === 'draw') {
+                    // DẠNG VẼ: KHÔNG TÍNH ĐIỂM VÀO TOTAL/SCORE
+                    let isDrawn = canvasMemory[`canvas_${q.id}`] ? canvasMemory[`canvas_${q.id}`].touched : false;
+                    let remark = isDrawn ? "Tuyệt vời! Em đã hoàn thành bức vẽ rất sáng tạo 🎨🌟" : "Em chưa vẽ hình, hãy thử sức ở lần sau nhé! 😉";
+                    rHTML = `<div class="r-question">Câu ${i+1}: ${q.q}</div><div class="r-student">Nhận xét: <b style="color:#2f3542;">${remark}</b></div>`;
+                    
+                    reviewHTML += `<div class="review-item" style="border-left-color:#2ed573; background:#e0f8e9;">${rHTML}</div>`;
+                    return; // Skip standard reviewHTML append
+                }
+
+                if(q.type !== 'match') { reviewHTML += `<div class="review-item ${isCorrect ? 'item-correct' : 'item-wrong'}">${rHTML}${explHtml}</div>`; } 
+                else { reviewHTML += `<div class="review-item" style="border-left-color:#70a1ff">${rHTML}${explHtml}</div>`; }
+            });
+
+            let submitBtn = document.querySelector('.submit-btn');
+            if(submitBtn) { submitBtn.innerHTML = "⏳ Đang nộp bài và lưu điểm..."; submitBtn.disabled = true; submitBtn.style.opacity = "0.8"; }
+
+            let cauSai = total - score - unansweredPoints;
+            if (cauSai < 0) cauSai = 0;
+            let diemSo = total > 0 ? ((score / total) * 10).toFixed(1) : 10; // Đề phòng total = 0 do toàn câu hỏi vẽ
+
+            const postData = {
+                hoTen: name,
+                lop: document.getElementById('studentClass').value || "Chưa nhập",
+                diem: diemSo,
+                soCauDung: score,
+                soCauSai: cauSai,
+                soCauChuaLam: unansweredPoints,
+                tongSoCau: total
+            };
+
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbz4_wWGrM4YrqpZbSbovnSyjNKdIT5cZo3xS57frOJ4FXQqE-Jx-0B5-Tq2l9Qf6x_jrQ/exec';
+
+            fetch(scriptURL, {
+                method: 'POST', body: JSON.stringify(postData), headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(response => response.json())
+            .then(data => { console.log("Lưu GS thành công!", data); })
+            .catch(error => { console.error("Lỗi lưu GS:", error); })
+            .finally(() => {
+                let circleClass = score === total ? 'score-perfect' : (score >= total/2 ? 'score-good' : 'score-try');
+                let message = score === total ? `Tuyệt vời! 🏆<br>Chúc mừng ${name}!` : (score >= total/2 ? `Làm tốt lắm ${name}! 🌟` : `Cố gắng lên ${name} nhé! 🌱`);
+
+                let resultUI = `
+                    <div class="result-screen">
+                        <h1 style="color: #ff6b81; font-size:35px; text-shadow:none;">KẾT QUẢ BÀI LÀM</h1>
+                        <div class="score-circle ${circleClass}">${score}/${total}</div>
+                        <h2 style="color: #2f3542;">${message}</h2>
+                        <div class="review-container"><h3 class="section-title">📋 Chi tiết bài làm:</h3>${reviewHTML}</div>
+                    </div>
+                `;
+                document.getElementById('app').innerHTML = resultUI;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        window.onload = renderApp;
+    </script>
+</body>
+</html>
